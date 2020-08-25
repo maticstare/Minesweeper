@@ -127,21 +127,27 @@ def zeroProcedure(r, c, k, b):
     #Row above
     if r-1 > -1:
         row = k[r-1]
-        if c-1 > -1: row[c-1] = l(r-1, c-1, b)
+        if c-1 > -1:
+            row[c-1] = l(r-1, c-1, b)
         row[c] = l(r-1, c, b)
-        if 9 > c+1: row[c+1] = l(r-1, c+1, b)
+        if c+1 < 9:
+            row[c+1] = l(r-1, c+1, b)
 
     #Same row
     row = k[r]
-    if c-1 > -1: row[c-1] = l(r, c-1, b)
-    if 9 > c+1: row[c+1] = l(r, c+1, b)
+    if c-1 > -1:
+        row[c-1] = l(r, c-1, b)
+    if c+1 < 9:
+        row[c+1] = l(r, c+1, b)
 
     #Row below
-    if 9 > r+1:
+    if r+1 < 9:
         row = k[r+1]
-        if c-1 > -1: row[c-1] = l(r+1, c-1, b)
+        if c-1 > -1:
+            row[c-1] = l(r+1, c-1, b)
         row[c] = l(r+1, c, b)
-        if 9 > c+1: row[c+1] = l(r+1, c+1, b)
+        if c+1 < 9:
+            row[c+1] = l(r+1, c+1, b)
 
 
 
@@ -190,8 +196,7 @@ def play(b, k, startTime):
         #Print timer result.
         print('Time: ' + str(round(time.time() - startTime)) + 's')
         #Offer to play again.
-        playAgain = input('Play again? (Y/N): ')
-        playAgain = playAgain.lower()
+        playAgain = input('Play again? (Y/N): ').lower()
         if playAgain == 'y':
             reset()
         else:

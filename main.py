@@ -1,40 +1,8 @@
 import random, time, copy
-from termcolor import cprint
-
-
-#Introduction
-print()
-cprint('=============================', 'red')
-cprint('Welcome to MineSweeper v.3.0!', 'cyan')
-cprint('=============================', 'red')
-print()
-print('Excited to declare version 3.0 of MineSweeper as almost fully functional!')
 
 
 #Reset game
 def reset():
-    print('''
-MAIN MENU
-=========
-
--> For instructions on how to play, type 'I'
--> To play immediately, type 'P'
-''')
-
-    choice = input("Type here: ").upper()
-
-    if choice == "I":
-        print(open("Instructions.txt", "r").read())
-
-        input("Press [enter] when ready to play. ")
-
-    elif choice != "P":
-        reset()
-
-
-
-
-
 #The solution grid.
     b = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -266,7 +234,6 @@ def updateValues(rn, c, b):
                 r[c+1] += 1
 
 
-
 #Gets the value of a coordinate on the grid.
 def l(r, c, b):
     return b[r][c]
@@ -284,6 +251,3 @@ def printBoard(b):
 
 
 
-
-
-reset()

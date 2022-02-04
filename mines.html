@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<title>Mines</title>
+<head>
+<script src="minefield.js"></script>
+<script>
+    var x = 10;
+    var y = 10;
+    var diff = 10;
+    var flags = diff;
+    var disabled = false;
+    var started = false;
+    var seconds = 1;
+
+    
+    function incrementSeconds() {
+        if(!disabled && started){
+            document.getElementById("secondsCounter").innerText = seconds;
+            seconds += 1;
+        }
+    }
+    var cancel = setInterval(incrementSeconds, 1000); 
+
+
+
+    function newGame(x, y, diff) {
+        minefield = new Minefield(x, y, diff);
+        flags = diff;
+        print();
+    }
+    function hit(x, y) {
+        started = true;
+        minefield.unveil(x, y);
+        print();
+    }
+    
+    function openBombs(){
+        for(var i=0; i<y; i++){
+            for(var j=0; j<x; j++){
+                if(minefield.field[j][i] == '&#128163'){
+                    minefield.veil[j][i] = false;
+                }
+            }
+        }
+        document.getElementById("tabela").innerHTML = "";
+        document.getElementById("stLi").innerHTML = "";
+        document.getElementById("ndLi").innerHTML = "";
+        tableField();
+    }
+    function zastavica(x, y){
+        if(!disabled){
+            if(minefield.flag[x][y] == false && flags > 0){
+                minefield.flag[x][y] = true;
+                document.getElementById(`id${x},${y}`).innerHTML = "&#128681";
+                flags--;
+            }else if(minefield.flag[x][y] == true){
+                minefield.flag[x][y] = false;
+                document.getElementById(`id${x},${y}`).innerHTML = "";
+                flags++;
+            }
+        }
+        
+        
+    }
+    function WhichButton(event, x, y) {
+        if(event.button == 0){
+            if(document.getElementById(`id${x},${y}`).innerHTML == "" && !disabled){
+                hit(x, y);
+            }
+        }else if(event.button == 1){
+            if(minefield.veil[x][y]){
+                zastavica(x, y);
+                print();
+            }
+        }
+    }
+    function tableField(){
+        var table = document.getElementById("tabela");
+        for(var y=0; y < minefield.height; y++){
+            var row = table.insertRow(y);
+            for(var x=0; x < minefield.width; x++){
+                var cell = row.insertCell(x);
+                cell.setAttribute("class", "tableTd");
+                cell.setAttribute("id", `id${x},${y}`);
+                cell.setAttribute("onmousedown", `WhichButton(event, ${x}, ${y})`);
+                if (!minefield.veil[x][y]){
+                    cell.innerHTML = minefield.field[x][y];
+                }else if(minefield.flag[x][y]){
+                    cell.innerHTML = "&#128681";
+                }else{
+                    cell.innerHTML = "";
+                }                
+            }        
+        }
+    }
+    function print() {
+        if(!disabled){
+            remaining = minefield.veiled + minefield.explosions - diff;
+            document.getElementById("tabela").innerHTML = "";
+            document.getElementById("stLi").innerHTML = "";
+            document.getElementById("ndLi").innerHTML = "";
+            tableField();
+            document.getElementById("stLi").appendChild(document.createTextNode("Hidden left: " + remaining));
+            document.getElementById("ndLi").appendChild(document.createTextNode("Flags left: " + flags));
+            popup(remaining); 
+        }
+        
+    }
+    function popup(remaining){
+        if(minefield.explosions == 1){
+            disabled = true;
+            new Audio("bombExplosion.mp3").play();
+            openBombs();
+            setTimeout(function(){ alert("You lost!"); }, 100);
+        }else if(remaining == 0 && minefield.explosions == 0){
+            disabled = true;
+            new Audio("victory.mp3").play();
+            setTimeout(function(){ alert("You won!"); }, 100);
+
+            var table = document.getElementById("scoreTable");
+            var row = table.insertRow(1);
+            row.insertCell(0).innerHTML = document.getElementById("username").value;
+            row.insertCell(1).innerHTML = document.getElementById("secondsCounter").innerHTML;
+            sortTable();
+        }
+    }
+    function newOnClick(){
+        disabled = false;
+        started = false;
+        x = document.getElementById('x').value;
+        if(x < 5){
+            x = 5;
+            document.getElementById('x').value = x;
+            alert("Minimal width is 5!");
+        }else if(x > 23){
+            x = 23;
+            document.getElementById('x').value = x;
+            alert("Maximal width is 23!");
+        }
+        y = document.getElementById('y').value;
+        if(y < 5){
+            y = 5;
+            document.getElementById('y').value = y;
+            alert("Minimal height is 5!");
+        }else if(y > 16){
+            y = 16;
+            document.getElementById('y').value = y;
+            alert("Maximal height is 16!");
+        }
+        diff = document.getElementById('diff').value;
+        if(diff < 1){
+            diff = 1;
+            document.getElementById('diff').value = diff;
+            alert(`Minimal number of bombs is 1!`);
+        }else if(diff > x*y-1){
+            diff = x*y-1;
+            document.getElementById('diff').value = diff;
+            alert(`Maximal number of bombs is ${x*y-1}!`);
+        }
+        seconds = 1;
+        started = false;
+        document.getElementById("secondsCounter").innerHTML = 0;
+
+        newGame(x, y, diff);
+    }
+    function sortTable() {
+        var table, rows, switching, i, x, y, shouldSwitch;
+        table = document.getElementById("scoreTable");
+        switching = true;
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName("TD")[1];
+                y = rows[i + 1].getElementsByTagName("TD")[1];
+                if (Number(x.innerHTML) > Number(y.innerHTML)) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
+        }
+    }
+    
+    </script>
+<style>
+    body, #output{
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: lightblue;
+        list-style-type: none;
+    }
+    ul, li{
+        margin-bottom: 10px;
+    }
+    #tabela, .tableTd{
+        border: 1px black solid;
+        border-collapse: collapse;
+    }
+    h1{
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%);
+        background-color: green;
+    }
+    #tabela {        
+        background-color: yellow;
+        position: relative;
+        left: 50%;
+        transform: translate(-50%);
+    }
+    .tableTd:hover{
+        background-color: gold;
+    }
+    #inputTable {        
+        background-color: red;
+        position: relative;
+        left: 50%;
+        transform: translate(-50%);
+    }
+    .tableTd{
+        width: 40px;
+        height: 40px;
+        text-align: center;
+    }
+    .textInput{
+        width:50px;
+    }
+    #inputTable td{
+        text-align: center;
+        padding: 5px;
+    }
+    #content{
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%);
+        top:10%;
+    }
+    #scoreDiv{
+        float: right;
+    }
+    #scoreTable, #scoreTable td, #scoreTable th{
+        text-align: center;
+        border: 1px black solid;
+        border-collapse: collapse;
+    }
+    #instructions{
+        width: 20%;
+    }
+    #secondsCounter{
+        display: inline;
+    }
+</style>
+</head>
+<body>
+    <h1>Welcome to minesweeper!</h1>
+    <div id="content">
+        <div id="gameField">
+            <table id="tabela"></table>
+            <p>
+                <ul id="output">
+                    <li id="stLi"></li>
+                    <li id="ndLi"></li>
+                    <li>Time: <div id="secondsCounter">0</div></li>
+                    <li>Username: <input id="username" type="text" value="default"></li>
+                </ul>
+            </p>
+        </div>
+        <table id="inputTable">
+            <tr>
+                <th>Width:</th>
+                <th>Height:</th>
+                <th>Number of bombs:</th>
+            </tr>
+            <tr>
+                <td><input class="textInput" type="number" id="x" value="10" min="5" max="23"></td>
+                <td><input class="textInput" type="number" id="y" value="10" min="5" max="16"></td>
+                <td><input class="textInput" type="number" id="diff" value="10" min="1"></td>
+            </tr>
+            <tr>
+                <td colspan="3" id="newBttn"><input type="button" value="New game" onclick="newOnClick()"></td>
+            </tr>
+        </table>
+    </div>
+    <div id="scoreDiv">
+        <h3>Scoreboard: </h3>
+        <table id="scoreTable">
+            <tr>
+                <th>Username: </th>
+                <th>Time: </th>
+            </tr>
+        </table>
+    </div>
+    <div id="instructions">
+        <h3>Instructions:</h3>
+        <ul>
+            <li>You are presented with a board of squares. Some squares contain mines (bombs), others don't. If you click on a square containing a bomb, you lose. If you manage to click all the squares (without clicking on any bombs) you win.</li>
+            <li>Clicking a square which doesn't have a bomb reveals the number of neighbouring squares containing bombs. Use this information plus some guess work to avoid the bombs.</li>
+            <li>To open a square, point at the square and click on it.</li>
+            <li>If you think a square contains bomb, you can flag it with middle-click.</li>
+            <li><b>Smallest field: 5x5, Biggest field: 23x16</b></li>
+            <li><b>Please enter your username before you start!</b></li>
+        </ul>
+    </div>
+    <script>
+        newGame(x, y, diff);
+    </script>
+</body>
+</html>
